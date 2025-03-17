@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer, type WebSocket } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertDreamSchema, encouragementSchema } from "@shared/schema";
 
@@ -11,7 +11,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     path: "/ws",
   });
 
-  wss.on('connection', (ws: WebSocket) => {
+  wss.on('connection', (ws) => {
     console.log('New WebSocket connection established');
     ws.on('error', console.error);
   });
