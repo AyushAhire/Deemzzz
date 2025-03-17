@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import SpaceBackground from "@/components/SpaceBackground";
 import DreamForm from "@/components/DreamForm";
 import DreamCapsule from "@/components/DreamCapsule";
+import DreamConnections from "@/components/DreamConnections";
 import StatsPanel from "@/components/StatsPanel";
 import type { Dream } from "@shared/schema";
 
 export default function DreamSpace() {
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Use relative WebSocket URL with /ws path
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
@@ -77,17 +78,19 @@ export default function DreamSpace() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <SpaceBackground />
 
-      <div className="relative z-10">
+      <div className="relative z-10" ref={containerRef}>
         <StatsPanel dreams={dreams} />
+        <DreamForm />
 
-        <div className="container mx-auto px-4 py-8">
-          <DreamForm />
+        <div className="container mx-auto px-4 py-16">
+          <DreamConnections dreams={dreams} containerRef={containerRef} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {dreams.map((dream) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+            {dreams.map((dream, index) => (
               <DreamCapsule
                 key={dream.id}
                 dream={dream}
+                index={index}
                 onLike={() => likeMutation.mutate(dream.id)}
                 onEncourage={(message) => 
                   encourageMutation.mutate({ dreamId: dream.id, message })}

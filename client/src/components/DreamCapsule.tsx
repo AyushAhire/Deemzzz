@@ -10,9 +10,10 @@ interface DreamCapsuleProps {
   dream: Dream;
   onLike: () => void;
   onEncourage: (message: string) => void;
+  index: number;
 }
 
-export default function DreamCapsule({ dream, onLike, onEncourage }: DreamCapsuleProps) {
+export default function DreamCapsule({ dream, onLike, onEncourage, index }: DreamCapsuleProps) {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -23,37 +24,58 @@ export default function DreamCapsule({ dream, onLike, onEncourage }: DreamCapsul
     }
   };
 
+  // Create a floating animation that's unique to each capsule
+  const floatingAnimation = {
+    y: [0, 10, 0],
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+      delay: index * 0.2, // Stagger the animations
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="dream-capsule relative"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ 
+        opacity: 1, 
+        scale: 1,
+        ...floatingAnimation
+      }}
       whileHover={{ scale: 1.02 }}
-      className="relative"
     >
       <Card 
         className={`
-          backdrop-blur-xl bg-white/10 border-white/20 text-white
-          overflow-hidden transition-all duration-300
+          backdrop-blur-2xl bg-white/5 border-white/10
+          shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
+          overflow-hidden transition-all duration-300 rounded-2xl
+          hover:bg-white/10 hover:border-white/20
           ${isExpanded ? 'h-auto' : 'h-48'}
         `}
+        style={{
+          WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(20px)',
+        }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="p-6">
+        <div className="p-6 relative z-10">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="font-semibold text-lg">
+              <h3 className="font-semibold text-lg text-white/90">
                 {dream.email.split('@')[0]}...
               </h3>
               <p className="text-sm text-white/60">
                 Target: {new Date(dream.targetDate).toLocaleDateString()}
               </p>
             </div>
-            
+
             <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white/60 hover:text-white"
+                className="text-white/60 hover:text-white hover:bg-white/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   onLike();
@@ -62,11 +84,11 @@ export default function DreamCapsule({ dream, onLike, onEncourage }: DreamCapsul
                 <Heart className="w-4 h-4 mr-1" />
                 {dream.likes}
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white/60 hover:text-white"
+                className="text-white/60 hover:text-white hover:bg-white/10"
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 {dream.encouragements}
@@ -84,9 +106,14 @@ export default function DreamCapsule({ dream, onLike, onEncourage }: DreamCapsul
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Send encouragement..."
-                className="bg-white/5 border-white/20 text-white"
+                className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
               />
-              <Button onClick={handleEncourage}>Send</Button>
+              <Button 
+                onClick={handleEncourage}
+                className="bg-white/10 hover:bg-white/20 text-white"
+              >
+                Send
+              </Button>
             </div>
           )}
         </div>
