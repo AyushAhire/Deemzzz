@@ -16,16 +16,20 @@ interface DreamCapsuleProps {
 export default function DreamCapsule({ dream, onLike, onEncourage, index }: DreamCapsuleProps) {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
-  const [dragConstraints, setDragConstraints] = useState({ top: -200, left: -200, right: 200, bottom: 200 });
+  const [dragConstraints, setDragConstraints] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
 
   useEffect(() => {
     const updateConstraints = () => {
-      setDragConstraints({
-        top: -window.innerHeight / 2,
-        left: -window.innerWidth / 2,
-        right: window.innerWidth / 2,
-        bottom: window.innerHeight / 2,
-      });
+      const parentElement = document.querySelector('.container');
+      if (parentElement) {
+        const rect = parentElement.getBoundingClientRect();
+        setDragConstraints({
+          top: 0,
+          left: 0,
+          right: Math.max(0, rect.width - 300), // 300px is capsule width
+          bottom: Math.max(0, rect.height - 200), // 200px is approximate capsule height
+        });
+      }
     };
 
     window.addEventListener('resize', updateConstraints);
@@ -59,13 +63,9 @@ export default function DreamCapsule({ dream, onLike, onEncourage, index }: Drea
       initial={{ opacity: 1 }}
       animate={floatingAnimation}
       drag
-      dragElastic={0.5}
+      dragMomentum={false}
+      dragElastic={0.1}
       dragConstraints={dragConstraints}
-      dragTransition={{ 
-        bounceStiffness: 400, 
-        bounceDamping: 20,
-        power: 0.2 
-      }}
       whileDrag={{ 
         scale: 1.1, 
         zIndex: 50,

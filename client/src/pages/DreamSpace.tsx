@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import { motion } from "framer-motion";
 import SpaceBackground from "@/components/SpaceBackground";
 import DreamForm from "@/components/DreamForm";
 import DreamCapsule from "@/components/DreamCapsule";
@@ -78,11 +79,19 @@ export default function DreamSpace() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <SpaceBackground />
 
-      <div className="relative z-10" ref={containerRef}>
-        <StatsPanel dreams={dreams} />
-        <DreamForm />
+      <StatsPanel dreams={dreams} />
+      <DreamForm />
 
-        <div className="container mx-auto px-4 py-16">
+      <motion.div 
+        className="relative z-10 min-h-screen"
+        ref={containerRef}
+        drag
+        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        dragTransition={{ bounceStiffness: 100, bounceDamping: 10 }}
+        style={{ cursor: 'grab' }}
+      >
+        <div className="container mx-auto px-4 py-16 min-h-screen">
           <DreamConnections dreams={dreams} containerRef={containerRef} />
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
@@ -98,7 +107,7 @@ export default function DreamSpace() {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
