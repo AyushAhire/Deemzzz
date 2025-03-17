@@ -14,30 +14,53 @@ export default function DreamSpace() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    let websocket: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
 
-    websocket.onopen = () => {
-      console.log('WebSocket connection established');
-    };
+    const connect = () => {
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
-    websocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+        websocket.onopen = () => {
+          console.log('WebSocket connection established');
+          setWs(websocket);
+        };
 
-    setWs(websocket);
+        websocket.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
 
-    websocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'new_dream' || data.type === 'dream_liked' || data.type === 'dream_encouraged') {
-        queryClient.invalidateQueries({ queryKey: ['/api/dreams'] });
+        websocket.onclose = () => {
+          console.log('WebSocket connection closed');
+          setWs(null);
+
+          // Attempt to reconnect after 2 seconds
+          reconnectTimeout = setTimeout(connect, 2000);
+        };
+
+        websocket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'new_dream' || data.type === 'dream_liked' || data.type === 'dream_encouraged') {
+              queryClient.invalidateQueries({ queryKey: ['/api/dreams'] });
+            }
+          } catch (error) {
+            console.error('Error processing WebSocket message:', error);
+          }
+        };
+      } catch (error) {
+        console.error('Error creating WebSocket connection:', error);
       }
     };
+
+    connect();
 
     return () => {
-      if (websocket.readyState === WebSocket.OPEN) {
+      if (websocket) {
         websocket.close();
       }
+      clearTimeout(reconnectTimeout);
     };
   }, []);
 
