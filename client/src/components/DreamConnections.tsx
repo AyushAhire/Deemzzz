@@ -13,33 +13,55 @@ export default function DreamConnections({ dreams, containerRef }: DreamConnecti
   useEffect(() => {
     if (!containerRef.current || !svgRef.current || dreams.length < 2) return;
 
-    const capsules = containerRef.current.getElementsByClassName('dream-capsule');
-    const svg = svgRef.current;
-    svg.setAttribute('width', containerRef.current.offsetWidth.toString());
-    svg.setAttribute('height', containerRef.current.offsetHeight.toString());
+    const updateConnections = () => {
+      const capsules = containerRef.current!.getElementsByClassName('dream-capsule');
+      const svg = svgRef.current!;
+      svg.setAttribute('width', containerRef.current!.offsetWidth.toString());
+      svg.setAttribute('height', containerRef.current!.offsetHeight.toString());
 
-    // Clear existing lines
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild);
-    }
-
-    // Create connections between capsules
-    for (let i = 0; i < capsules.length; i++) {
-      for (let j = i + 1; j < capsules.length; j++) {
-        const capsule1 = capsules[i].getBoundingClientRect();
-        const capsule2 = capsules[j].getBoundingClientRect();
-        const containerRect = containerRef.current.getBoundingClientRect();
-
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', (capsule1.left + capsule1.width/2 - containerRect.left).toString());
-        line.setAttribute('y1', (capsule1.top + capsule1.height/2 - containerRect.top).toString());
-        line.setAttribute('x2', (capsule2.left + capsule2.width/2 - containerRect.left).toString());
-        line.setAttribute('y2', (capsule2.top + capsule2.height/2 - containerRect.top).toString());
-        line.setAttribute('stroke', 'rgba(255, 255, 255, 0.1)');
-        line.setAttribute('stroke-width', '1');
-        svg.appendChild(line);
+      // Clear existing lines
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
       }
-    }
+
+      // Create connections between capsules
+      for (let i = 0; i < capsules.length; i++) {
+        for (let j = i + 1; j < capsules.length; j++) {
+          const capsule1 = capsules[i].getBoundingClientRect();
+          const capsule2 = capsules[j].getBoundingClientRect();
+          const containerRect = containerRef.current!.getBoundingClientRect();
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', (capsule1.left + capsule1.width/2 - containerRect.left).toString());
+          line.setAttribute('y1', (capsule1.top + capsule1.height/2 - containerRect.top).toString());
+          line.setAttribute('x2', (capsule2.left + capsule2.width/2 - containerRect.left).toString());
+          line.setAttribute('y2', (capsule2.top + capsule2.height/2 - containerRect.top).toString());
+          line.setAttribute('stroke', 'rgba(255, 255, 255, 0.1)');
+          line.setAttribute('stroke-width', '1');
+          svg.appendChild(line);
+        }
+      }
+    };
+
+    // Initial update
+    updateConnections();
+
+    // Add event listeners for drag updates
+    const observer = new MutationObserver(updateConnections);
+    observer.observe(containerRef.current, { 
+      attributes: true, 
+      childList: true, 
+      subtree: true,
+      attributeFilter: ['style', 'transform'] 
+    });
+
+    // Update on window resize
+    window.addEventListener('resize', updateConnections);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateConnections);
+    };
   }, [dreams, containerRef]);
 
   return (
