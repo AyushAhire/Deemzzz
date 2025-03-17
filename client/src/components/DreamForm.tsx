@@ -16,23 +16,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-type FormData = Omit<InsertDream, 'targetDate'> & {
-  targetDate: string;
-};
-
 export default function DreamForm() {
   const { toast } = useToast();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(
-      insertDreamSchema
-        .omit({ targetDate: true })
-        .extend({
-          targetDate: insertDreamSchema.shape.targetDate.transform((date) =>
-            date.toISOString()
-          ),
-        })
-    ),
+  const form = useForm<InsertDream>({
+    resolver: zodResolver(insertDreamSchema),
     defaultValues: {
       description: "",
       email: "",
@@ -41,15 +29,12 @@ export default function DreamForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: FormData) => {
+    mutationFn: async (data: InsertDream) => {
       const res = await fetch("/api/dreams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
-        body: JSON.stringify({
-          ...data,
-          targetDate: new Date(data.targetDate).toISOString(),
-        }),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {

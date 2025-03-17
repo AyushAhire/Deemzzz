@@ -20,6 +20,7 @@ export const insertDreamSchema = createInsertSchema(dreams)
   .extend({
     email: z.string().email(),
     description: z.string().min(10).max(500),
+    targetDate: z.string().transform((str) => new Date(str)),
   });
 
 export type InsertDream = z.infer<typeof insertDreamSchema>;
