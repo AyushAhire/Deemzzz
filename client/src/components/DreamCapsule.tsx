@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,23 @@ interface DreamCapsuleProps {
 export default function DreamCapsule({ dream, onLike, onEncourage, index }: DreamCapsuleProps) {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [dragConstraints, setDragConstraints] = useState({ top: -200, left: -200, right: 200, bottom: 200 });
+
+  useEffect(() => {
+    const updateConstraints = () => {
+      setDragConstraints({
+        top: -window.innerHeight / 2,
+        left: -window.innerWidth / 2,
+        right: window.innerWidth / 2,
+        bottom: window.innerHeight / 2,
+      });
+    };
+
+    window.addEventListener('resize', updateConstraints);
+    updateConstraints();
+
+    return () => window.removeEventListener('resize', updateConstraints);
+  }, []);
 
   const handleEncourage = () => {
     if (message.trim()) {
@@ -41,7 +58,21 @@ export default function DreamCapsule({ dream, onLike, onEncourage, index }: Drea
       className="dream-capsule relative"
       initial={{ opacity: 1 }}
       animate={floatingAnimation}
-      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+      drag
+      dragElastic={0.5}
+      dragConstraints={dragConstraints}
+      dragTransition={{ 
+        bounceStiffness: 400, 
+        bounceDamping: 20,
+        power: 0.2 
+      }}
+      whileDrag={{ 
+        scale: 1.1, 
+        zIndex: 50,
+        transition: { duration: 0.2 }
+      }}
+      whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+      onDragStart={() => setIsExpanded(false)}
     >
       <Card 
         className={`
@@ -49,6 +80,7 @@ export default function DreamCapsule({ dream, onLike, onEncourage, index }: Drea
           shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
           overflow-hidden transition-all duration-300 rounded-xl
           hover:bg-white/10 hover:border-white/20
+          cursor-grab active:cursor-grabbing
           ${isExpanded ? 'h-auto' : 'h-36'}
           max-w-[300px]
         `}
@@ -56,7 +88,7 @@ export default function DreamCapsule({ dream, onLike, onEncourage, index }: Drea
           WebkitBackdropFilter: 'blur(20px)',
           backdropFilter: 'blur(20px)',
         }}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => !isExpanded && setIsExpanded(true)}
       >
         <div className="p-4 relative z-10">
           <div className="flex justify-between items-start mb-2">
