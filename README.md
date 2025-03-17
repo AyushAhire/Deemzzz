@@ -22,14 +22,6 @@ Dream Capsule Universe is a creative game where users can design, customize, and
 
 ---
 
-## Folder Structure 📁
-```
-/client   - React frontend app
-/server   - Express backend API
-/shared   - Shared TypeScript code (types, utils, etc.)
-```
-
----
 
 ## Setup Instructions 🧑‍💻
 
@@ -49,28 +41,9 @@ npm install
 npm run dev
 ```
 
-### 4️⃣ Build for production:
-```bash
-npm run build
-```
-
-### 5️⃣ Start the production server:
-```bash
-npm run start
-```
-
----
 
 ## Requirements
 - Node.js v18 or higher
 - Git
 
 ---
-
-## License 📄
-MIT License
-```
-
----
-
-✅ Ready to drop this as `README.md` into your repo! Want me to also help with deployment instructions for Vercel? 🚀
